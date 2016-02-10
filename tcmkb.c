@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 /*
 C言語学習用課題
@@ -22,8 +23,6 @@ int argchk(char* arg);				//コマンドライン引数の識別
 void errmsg(int p);					//エラーメッセージ表示
 int srch(char* org, char* match);	//検索
 char BoldInsert(char* org, char* boldspot, char* result, int srchcount, int orglength);
-
-int Strlength(const char* s);		//文字列の長さを調べる
 
 int i; int j; int k;
 
@@ -86,15 +85,14 @@ int argchk(char* arg){
 //検索・置換
 int srch(char *org, char *match){
 	//	方針:1文字目を探す→全一致かどうか確認する
-	int orglength = Strlength(org);
-	int matchlength = Strlength(match);
+	int orglength = strlen(org);
+	int matchlength = strlen(match);
 	int scm = orglength - matchlength + 1;	//サーチ回数
 	if (scm <= 0) {return 2;}				//検索文字列が対象文字列より長い=>エラー
 	
 	int srchcount = 0;						//発見回数
 	char boldspot[orglength+1];						//<b>挿入位置の配列
-	for (i=0;i<=orglength+1;i++){boldspot[i]='0';}	//初期化
-	boldspot[orglength+1] = '\0';			//<b>最後にnullを入れる
+	memset(boldspot, '\0', orglength+1);
 	
 	for(i = 0; i < scm;){					//ハズレまたは発見が確定した時にi++
 		
@@ -108,11 +106,11 @@ int srch(char *org, char *match){
 				
 				if ((org[i+j] == match[j]) & (j == matchlength - 1)) {
 					srchcount++;			//発見
-					boldspot[i] += 1;		//<b>マーキング
+					boldspot[i] += 1;		//<b>挿入位置のメモリに1加える
 					for (k = 0; k < matchlength-1 ; k++){
 						i++;				//検索文字数分インデックスを進める
 					}
-					boldspot[i+1] += 2;		//</b>マーキング
+					boldspot[i+1] += 2;		//</b>挿入位置のメモリに2加える
 					i++;
 					break;
 				}
@@ -124,11 +122,7 @@ int srch(char *org, char *match){
 
 	if(srchcount >= 1){
 		char result[orglength + srchcount*7];
-		for (int i=0;i<(orglength + srchcount*7);i++){result[i]='0';}	//0でフォーマット
-		result[orglength + srchcount*7] = '\0';
-		
-//		printf("orgl+srchcount*7=%d\n", orglength+srchcount*7);
-//		printf("boldspot:%s\n", boldspot);
+		memset(result, '\0', orglength + srchcount*7 - 1);
 		
 		BoldInsert(org, boldspot, result, srchcount, orglength);	//resultで<b>挿入後の文を受け取る
 		
@@ -143,54 +137,37 @@ int srch(char *org, char *match){
 //<b>挿入関数
 char BoldInsert(char *org, char *boldspot, char *result, int srchcount, int orglength){
 //	printf("boldspot:%s\n", boldspot);
-	int cursor = 0;
+	int cursor = 0; int chk = 0;
 	for (int i=0;i<=orglength;i++){
 		switch (boldspot[i]){
-		  case '0':
+		  case '\0':					//null文字のままだった
 			result[cursor] = org[i];
 			cursor += 1;				//1バイト進む
 			break;
-		  case '1':
-			result[cursor] = '<';
-			result[cursor+1] = 'b';
-			result[cursor+2] = '>';
+		  case '\0'+1:
+			strncat(result, "<b>", 3);
 			result[cursor+3] = org[i];
 			cursor += 4;				//4バイト進む:<b>挿入
 			break;
-		  case '2':
-			result[cursor] = '<';
-			result[cursor+1] = '/';
-			result[cursor+2] = 'b';
-			result[cursor+3] = '>';
+		  case '\0'+2:
+			strncat(result, "</b>", 4);
 			result[cursor+4] = org[i];
 			cursor += 5;				//5バイト進む:</b>挿入
 			break;
-		  case '3':
-			result[cursor] = '<';
-			result[cursor+1] = '/';
-			result[cursor+2] = 'b';
-			result[cursor+3] = '>';
-			result[cursor+4] = '<';
-			result[cursor+5] = 'b';
-			result[cursor+6] = '>';
+		  case '\0'+3:
+			strncat(result, "</b><b>", 7);
 			result[cursor+7] = org[i];
 			cursor += 8;				//8バイト進む:</b><b>挿入
 			break;
 		  default:
-			printf("ERROR\n");
+			printf("spot ERROR\n");
+			chk = 3;
 			break;
 		}
 
 //		printf("i:%d\nresult:%s\n",i,result);
 	}
-	return *result;
-}
-
-
-//文字列の長さを調べる \0は含まない
-int Strlength(const char* s){
-	int n=0;while (*s != '\0'){s++; n++;}
-	return (n);
+	return (chk);
 }
 
 
