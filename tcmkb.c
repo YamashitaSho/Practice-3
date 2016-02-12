@@ -53,8 +53,8 @@ int main(int argc, char *argv[]){
 //s_org,s_findが全て0かつargc==3 → 省略と判断
 //省略に当てはまらず、0のものがある → 引数エラー
 	if (!(s_org && s_find) && argc == 3){
-		s_org = 1;
-		s_find = 0;
+		s_org = 0;
+		s_find = 1;
 	}else if(!(s_org && s_find)){
 		chk = 1;
 	}
