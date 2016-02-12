@@ -4,9 +4,9 @@
 ##コンパイル方法
 gcc -Wall -o tcmkb tcmkb.c
 ##実行方法
-tcmkb -f "abcdefg" -o "bcd"
+tcmkb -o "abcdefg" -f "bcd"
 
-tcmkb -f "string1" -o "string2"
+tcmkb -o "string1" -f "string2"
 に限り
 tcmkb "string1" "string2"
 と書くことが出来る。
